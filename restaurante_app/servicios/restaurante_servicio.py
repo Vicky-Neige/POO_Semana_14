@@ -17,14 +17,76 @@ class RestauranteServicio:
         raw_usuarios = ArchivoServicio.cargar_json(self.ruta_usuarios)
         self.usuarios = [Usuario.from_dict(u) for u in raw_usuarios]
 
+    def guardar_productos(self):
+        datos = [p.to_dict() for p in self.productos]
+        ArchivoServicio.guardar_json(self.ruta_productos, datos)
+
     def validar_acceso(self, username: str, password: str) -> Usuario:
         for usuario in self.usuarios:
             if usuario.username == username and usuario.password == password:
                 return usuario
         return None
 
+    def obtener_usuarios(self) -> list:
+        return self.usuarios
+
     def obtener_productos(self) -> list:
         return self.productos
 
-    def obtener_usuarios(self) -> list:
-        return self.usuarios
+    def obtener_producto_por_id(self, id_prod):
+        for p in self.productos:
+            if str(p.id_producto) == str(id_prod):
+                return p
+        return None
+
+    def agregar_producto(self, id_prod, nombre, precio, categoria, stock):
+        if not id_prod or not nombre:
+            return False, "El ID y el Nombre son obligatorios."
+
+        if self.obtener_producto_por_id(id_prod):
+            return False, f"El producto con ID '{id_prod}' ya existe."
+
+        try:
+            precio_val = float(precio)
+            stock_val = int(stock)
+        except ValueError:
+            return False, "El precio debe ser un número y el stock un número entero."
+
+        nuevo_prod = Producto(id_prod, nombre, precio_val, categoria, stock_val)
+        self.productos.append(nuevo_prod)
+        self.guardar_productos()
+        return True, "Producto registrado correctamente."
+
+    def actualizar_producto(self, id_prod, nombre, precio, categoria, stock):
+        if not id_prod:
+            return False, "Debe especificar un ID para actualizar."
+
+        prod = self.obtener_producto_por_id(id_prod)
+        if not prod:
+            return False, f"No se encontró ningún producto con ID '{id_prod}'."
+
+        try:
+            precio_val = float(precio)
+            stock_val = int(stock)
+        except ValueError:
+            return False, "El precio debe ser un número y el stock un número entero."
+
+        prod.nombre = nombre
+        prod.precio = precio_val
+        prod.categoria = categoria
+        prod.stock = stock_val
+
+        self.guardar_productos()
+        return True, "Producto actualizado correctamente."
+
+    def eliminar_producto(self, id_prod):
+        if not id_prod:
+            return False, "Debe especificar un ID para eliminar."
+
+        prod = self.obtener_producto_por_id(id_prod)
+        if not prod:
+            return False, f"No se encontró el producto con ID '{id_prod}'."
+
+        self.productos.remove(prod)
+        self.guardar_productos()
+        return True, "Producto eliminado correctamente."
