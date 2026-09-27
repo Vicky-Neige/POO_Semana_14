@@ -11,3 +11,14 @@ class ArchivoServicio:
                 return json.load(archivo)
         except Exception:
             return []
+
+    @staticmethod
+    def guardar_json(ruta_archivo: str, datos: list) -> bool:
+        try:
+            os.makedirs(os.path.dirname(ruta_archivo), exist_ok=True)
+            with open(ruta_archivo, 'w', encoding='utf-8') as archivo:
+                json.dump(datos, archivo, ensure_ascii=False, indent=4)
+            return True
+        except Exception as e:
+            print(f"Error al guardar archivo: {e}")
+            return False

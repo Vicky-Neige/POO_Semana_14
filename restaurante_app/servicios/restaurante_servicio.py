@@ -1,13 +1,16 @@
 from modelos.producto import Producto
 from modelos.usuario import Usuario
+from modelos.venta import Venta
 from servicios.archivo_servicio import ArchivoServicio
 
 class RestauranteServicio:
-    def __init__(self, ruta_productos: str, ruta_usuarios: str):
+    def __init__(self, ruta_productos: str, ruta_usuarios: str, ruta_ventas: str = None):
         self.ruta_productos = ruta_productos
         self.ruta_usuarios = ruta_usuarios
+        self.ruta_ventas = ruta_ventas
         self.productos = []
         self.usuarios = []
+        self.ventas = []
         self.cargar_datos()
 
     def cargar_datos(self):
@@ -17,9 +20,21 @@ class RestauranteServicio:
         raw_usuarios = ArchivoServicio.cargar_json(self.ruta_usuarios)
         self.usuarios = [Usuario.from_dict(u) for u in raw_usuarios]
 
+        if self.ruta_ventas:
+            raw_ventas = ArchivoServicio.cargar_json(self.ruta_ventas)
+            self.ventas = [Venta.from_dict(v) for v in raw_ventas]
+
     def guardar_productos(self):
         datos = [p.to_dict() for p in self.productos]
         ArchivoServicio.guardar_json(self.ruta_productos, datos)
+
+    def guardar_ventas(self):
+        if self.ruta_ventas:
+            datos = [
+                v.to_dict() if hasattr(v, 'to_dict') else v 
+                for v in self.ventas
+            ]
+            ArchivoServicio.guardar_json(self.ruta_ventas, datos)
 
     def validar_acceso(self, username: str, password: str) -> Usuario:
         for usuario in self.usuarios:
@@ -90,3 +105,39 @@ class RestauranteServicio:
         self.productos.remove(prod)
         self.guardar_productos()
         return True, "Producto eliminado correctamente."
+
+    def registrar_venta(self, id_producto, cantidad):
+        producto = self.obtener_producto_por_id(id_producto)
+        if not producto:
+            return False, "El producto seleccionado no existe."
+
+        cantidad = int(cantidad)
+
+        if producto.stock < cantidad:
+            return False, f"Stock insuficiente. Disponible: {producto.stock}"
+
+        producto.stock -= cantidad
+        self.guardar_productos()
+
+        from datetime import datetime
+        id_venta = str(len(self.ventas) + 1)
+        total = producto.precio * cantidad
+        fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        nueva_venta = {
+            "id_venta": id_venta,
+            "id_producto": id_producto,
+            "nombre_producto": producto.nombre,
+            "cantidad": cantidad,
+            "precio_unitario": producto.precio,
+            "total": total,
+            "fecha": fecha
+        }
+
+        self.ventas.append(nueva_venta)
+        self.guardar_ventas()
+
+        return True, "Venta registrada con éxito."
+
+    def obtener_ventas(self) -> list:
+        return self.ventas

@@ -1,6 +1,6 @@
 class Producto:
     def __init__(self, id_producto: int, nombre: str, precio: float, categoria: str, stock: int):
-        self.id = id_producto
+        self.id_producto = id_producto
         self.nombre = nombre
         self.precio = precio
         self.categoria = categoria
@@ -15,3 +15,11 @@ class Producto:
             categoria=data.get("categoria", ""),
             stock=int(data.get("stock", 0))
         )
+    def to_dict(self):
+        return {
+            "id": self.id_producto,
+            "nombre": self.nombre,
+            "precio": self.precio,
+            "categoria": self.categoria,
+            "stock": self.stock
+        }

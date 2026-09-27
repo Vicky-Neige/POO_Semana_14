@@ -8,8 +8,13 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     ruta_prod = os.path.join(base_dir, "datos", "productos.json")
     ruta_usrs = os.path.join(base_dir, "datos", "usuarios.json")
+    ruta_vnts = os.path.join(base_dir, "datos", "ventas.json")
 
-    servicio = RestauranteServicio(ruta_productos=ruta_prod, ruta_usuarios=ruta_usrs)
+    servicio = RestauranteServicio(
+        ruta_productos=ruta_prod, 
+        ruta_usuarios=ruta_usrs,
+        ruta_ventas=ruta_vnts
+    )
 
     root = tk.Tk()
 

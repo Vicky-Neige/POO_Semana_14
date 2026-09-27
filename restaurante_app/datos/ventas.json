@@ -1,0 +1,11 @@
+[
+    {
+        "id_venta": "1",
+        "id_producto": "1",
+        "nombre_producto": "Hamburguesa Clasica",
+        "cantidad": 1,
+        "precio_unitario": 5.5,
+        "total": 5.5,
+        "fecha": "2026-09-27 17:48:59"
+    }
+]
